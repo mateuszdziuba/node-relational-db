@@ -24,3 +24,36 @@ Content-Type: application/json
 {
   "important": false
 }
+
+###
+
+GET http://localhost:3001/api/users
+
+###
+
+POST http://localhost:3001/api/users
+Content-Type: application/json
+
+{
+  "username": "mdzik",
+  "name": "Mati"
+}
+
+###
+
+POST http://localhost:3001/api/login
+Content-Type: application/json
+
+{
+  "username": "mdzik",
+  "password": "secret"
+}
+
+###
+
+POST http://localhost:3001/api/notes
+Content-Type: application/json
+
+{
+  "content": "Relational DBs are cool"
+}
