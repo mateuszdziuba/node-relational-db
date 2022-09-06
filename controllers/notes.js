@@ -37,7 +37,7 @@ router.delete('/:id', noteFinder, async (req, res) => {
   res.status(204).end()
 })
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', noteFinder, async (req, res) => {
   if (req.note) {
     req.note.important = req.body.important
     await req.note.save()
