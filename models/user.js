@@ -15,10 +15,19 @@ User.init(
       type: DataTypes.STRING,
       unique: true,
       allowNull: false,
+      validate: {
+        isEmail: true,
+      },
     },
     name: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
     },
   },
   {

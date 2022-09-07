@@ -1,15 +1,43 @@
 const router = require('express').Router()
+const jwt = require('jsonwebtoken')
 
-const { Blog } = require('../models')
+const { Blog, User } = require('../models')
+const { SECRET } = require('../utils/config')
+
+const tokenExtractor = (req, res, next) => {
+  const authorization = req.get('Authorization')
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    try {
+      req.decodedToken = jwt.verify(authorization.substring(7), SECRET)
+    } catch (error) {
+      res.status(401).json({ error: 'token invalid' })
+    }
+  } else {
+    res.status(401).json({ error: 'token missing' })
+  }
+  next()
+}
 
 router.get('/', async (req, res) => {
-  const blogs = await Blog.findAll()
+  const blogs = await Blog.findAll({
+    attributes: {
+      exclude: ['userId'],
+    },
+    include: {
+      model: User,
+      attributes: ['name'],
+    },
+  })
   res.json(blogs)
 })
 
-router.post('/', async (req, res) => {
+router.post('/', tokenExtractor, async (req, res) => {
   try {
-    const blog = await Blog.create(req.body)
+    const user = await User.findByPk(req.decodedToken.id)
+    const blog = await Blog.create({
+      ...req.body,
+      userId: user.id,
+    })
     res.json(blog)
   } catch (error) {
     return res.status(400).json({ error })
@@ -21,11 +49,12 @@ const blogFinder = async (req, res, next) => {
   next()
 }
 
-router.delete('/:id', blogFinder, async (req, res) => {
-  if (req.blog) {
+router.delete('/:id', blogFinder, tokenExtractor, async (req, res) => {
+  const user = await User.findByPk(req.decodedToken.id)
+  if (req.blog && req.blog.userId === user.id) {
     await req.blog.destroy()
   }
-  return res.status(400).json({ errror })
+  res.status(204).end()
 })
 
 router.put('/:id', blogFinder, async (req, res) => {
